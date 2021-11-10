@@ -1,3 +1,4 @@
+#include <clipping_planes_pars_fragment>
 precision highp float;
 precision highp int;
 
@@ -58,6 +59,7 @@ varying vec3 vColor;
 float specularStrength = 1.0;
 
 void main() {
+	#include <clipping_planes_fragment>
 	vec3 color = vColor;
 	float depth = gl_FragCoord.z;
 
@@ -65,7 +67,7 @@ void main() {
 		float u = 2.0 * gl_PointCoord.x - 1.0;
 		float v = 2.0 * gl_PointCoord.y - 1.0;
 	#endif
-	
+
 	#if defined(circle_point_shape) || defined (weighted_splats)
 		float cc = u*u + v*v;
 		if(cc > 1.0){
@@ -80,7 +82,7 @@ void main() {
 			discard;
 		}
 	#endif
-		
+
 	#if defined color_type_point_index
 		gl_FragColor = vec4(color, pcIndex / 255.0);
 	#else
@@ -96,7 +98,7 @@ void main() {
 		#endif
 
 		// code taken from three.js phong light fragment shader
-	
+
 		#if MAX_POINT_LIGHTS > 0
 
 			vec3 pointDiffuse = vec3( 0.0 );
@@ -144,9 +146,9 @@ void main() {
 				pointSpecular += schlick * pointLightColor[ i ] * pointSpecularWeight * pointDiffuseWeight * lDistance * specularNormalization;
 				pointSpecular = vec3(0.0, 0.0, 0.0);
 			}
-		
+
 		#endif
-		
+
 		#if MAX_DIR_LIGHTS > 0
 
 			vec3 dirDiffuse = vec3( 0.0 );
@@ -189,41 +191,41 @@ void main() {
 			}
 
 		#endif
-		
+
 		vec3 totalDiffuse = vec3( 0.0 );
 		vec3 totalSpecular = vec3( 0.0 );
-		
+
 		#if MAX_POINT_LIGHTS > 0
 
 			totalDiffuse += pointDiffuse;
 			totalSpecular += pointSpecular;
 
 		#endif
-		
+
 		#if MAX_DIR_LIGHTS > 0
 
 			totalDiffuse += dirDiffuse;
 			totalSpecular += dirSpecular;
 
 		#endif
-		
+
 		gl_FragColor.xyz = gl_FragColor.xyz * ( emissive + totalDiffuse + ambientLightColor * ambient ) + totalSpecular;
 
 	#endif
-	
+
 	#if defined weighted_splats
 	    //float w = pow(1.0 - (u*u + v*v), blendHardness);
-		
+
 		float wx = 2.0 * length(2.0 * gl_PointCoord - 1.0);
 		float w = exp(-wx * wx * 0.5);
-		
+
 		//float distance = length(2.0 * gl_PointCoord - 1.0);
 		//float w = exp( -(distance * distance) / blendHardness);
-		
+
 		gl_FragColor.rgb = gl_FragColor.rgb * w;
 		gl_FragColor.a = w;
 	#endif
-	
+
 	#if defined paraboloid_point_shape
 		float wi = 0.0 - ( u*u + v*v);
 		vec4 pos = vec4(vViewPosition, 1.0);
@@ -234,16 +236,16 @@ void main() {
 		float expDepth = pos.z;
 		depth = (pos.z + 1.0) / 2.0;
 		gl_FragDepthEXT = depth;
-		
+
 		#if defined(color_type_depth)
 			gl_FragColor.r = linearDepth;
 			gl_FragColor.g = expDepth;
 		#endif
-		
+
 		#if defined(use_edl)
 			gl_FragColor.a = log2(linearDepth);
 		#endif
-		
+
 	#else
 		#if defined(use_edl)
 			gl_FragColor.a = vLogDepth;
