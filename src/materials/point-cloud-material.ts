@@ -53,6 +53,7 @@ export interface IPointCloudMaterialUniforms {
   classificationLUT: IUniform<Texture>;
   clipBoxCount: IUniform<number>;
   clipBoxes: IUniform<Float32Array>;
+  clippingPlanes: IUniform<any[]>;
   depthMap: IUniform<Texture | null>;
   diffuse: IUniform<[number, number, number]>;
   fov: IUniform<number>;
@@ -93,6 +94,7 @@ export interface IPointCloudMaterialUniforms {
   highlightedPointColor: IUniform<Vector4>;
   enablePointHighlighting: IUniform<boolean>;
   highlightedPointScale: IUniform<number>;
+  clipping: IUniform<boolean>;
 }
 
 const TREE_TYPE_DEFS = {
@@ -166,6 +168,7 @@ export class PointCloudMaterial extends RawShaderMaterial {
     classificationLUT: makeUniform('t', this.classificationTexture || new Texture()),
     clipBoxCount: makeUniform('f', 0),
     clipBoxes: makeUniform('Matrix4fv', [] as any),
+    clippingPlanes: makeUniform('fv', [] as any),
     depthMap: makeUniform('t', null),
     diffuse: makeUniform('fv', [1, 1, 1] as [number, number, number]),
     fov: makeUniform('f', 1.0),
@@ -208,6 +211,7 @@ export class PointCloudMaterial extends RawShaderMaterial {
     highlightedPointColor: makeUniform('fv', DEFAULT_HIGHLIGHT_COLOR.clone()),
     enablePointHighlighting: makeUniform('b', true),
     highlightedPointScale: makeUniform('f', 2.0),
+    clipping: makeUniform('b', true),
   };
 
   @uniform('bbSize') bbSize!: [number, number, number];
@@ -276,6 +280,7 @@ export class PointCloudMaterial extends RawShaderMaterial {
     tex.minFilter = NearestFilter;
     tex.magFilter = NearestFilter;
     this.setUniform('visibleNodes', tex);
+    this.setUniform('clipping', true);
 
     this.treeType = getValid(parameters.treeType, TreeType.OCTREE);
     this.size = getValid(parameters.size, 1.0);
@@ -600,6 +605,19 @@ export class PointCloudMaterial extends RawShaderMaterial {
     ) => {
       const pointCloudMaterial = material as PointCloudMaterial;
       const materialUniforms = pointCloudMaterial.uniforms;
+
+      // Clip planes
+      if (material.clippingPlanes && material.clippingPlanes.length > 0) {
+        const planes = material.clippingPlanes;
+        const flattenedPlanes = new Array(4 * material.clippingPlanes.length);
+        for (let i = 0; i < planes.length; i++) {
+          flattenedPlanes[4*i + 0] = planes[i].normal.x;
+          flattenedPlanes[4*i + 1] = planes[i].normal.y;
+          flattenedPlanes[4*i + 2] = planes[i].normal.z;
+          flattenedPlanes[4*i + 3] = planes[i].constant;
+        }
+        materialUniforms.clippingPlanes.value = flattenedPlanes;
+      }
 
       materialUniforms.level.value = node.level;
       materialUniforms.isLeafNode.value = node.isLeafNode;

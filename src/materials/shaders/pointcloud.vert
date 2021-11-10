@@ -1,7 +1,7 @@
-#include <clipping_planes_pars_vertex>
 precision highp float;
 precision highp int;
 
+#include <clipping_planes_pars_vertex>
 #define max_clip_boxes 30
 
 attribute vec3 position;

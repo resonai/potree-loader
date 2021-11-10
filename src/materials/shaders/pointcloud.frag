@@ -1,7 +1,6 @@
-#include <clipping_planes_pars_fragment>
 precision highp float;
 precision highp int;
-
+#include <clipping_planes_pars_fragment>
 #if defined paraboloid_point_shape
 	#extension GL_EXT_frag_depth : enable
 #endif
