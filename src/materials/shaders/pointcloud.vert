@@ -73,6 +73,8 @@ uniform sampler2D depthMap;
 	uniform float highlightedPointScale;
 #endif
 
+uniform vec4 clippingPlanes[NUM_CLIPPING_PLANES];
+
 varying vec3 vColor;
 
 #if !defined(color_type_point_index)
@@ -544,5 +546,13 @@ void main() {
 			#endif
 		}
 	#endif
-	#include <clipping_planes_vertex>
+
+	vec4 plane;
+	vec3 vClipPosition = -(modelMatrix * vec4(position, 1.0)).xyz;
+	for (int i = 0; i < NUM_CLIPPING_PLANES; i++) {
+		plane = clippingPlanes[i];
+		if (dot(vClipPosition, plane.xyz) > plane.w) {
+		  gl_Position = vec4(171717.0, 171717.0, 171717.0, 1.0);
+		};
+	}
 }

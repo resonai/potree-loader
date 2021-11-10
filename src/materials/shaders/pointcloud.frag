@@ -1,6 +1,5 @@
 precision highp float;
 precision highp int;
-#include <clipping_planes_pars_fragment>
 #if defined paraboloid_point_shape
 	#extension GL_EXT_frag_depth : enable
 #endif
@@ -58,7 +57,6 @@ varying vec3 vColor;
 float specularStrength = 1.0;
 
 void main() {
-	#include <clipping_planes_fragment>
 	vec3 color = vColor;
 	float depth = gl_FragCoord.z;
 
