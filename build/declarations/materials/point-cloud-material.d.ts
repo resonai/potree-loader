@@ -17,6 +17,9 @@ export interface IPointCloudMaterialUniforms {
     classificationLUT: IUniform<Texture>;
     clipBoxCount: IUniform<number>;
     clipBoxes: IUniform<Float32Array>;
+    clipping: IUniform<boolean>;
+    numClippingPlanes: IUniform<number>;
+    clippingPlanes: IUniform<any[]>;
     depthMap: IUniform<Texture | null>;
     diffuse: IUniform<[number, number, number]>;
     fov: IUniform<number>;
@@ -70,6 +73,7 @@ export declare class PointCloudMaterial extends RawShaderMaterial {
     private gradientTexture;
     private _classification;
     private classificationTexture;
+    defines: any;
     uniforms: IPointCloudMaterialUniforms & Record<string, IUniform<any>>;
     bbSize: [number, number, number];
     depthMap: Texture | undefined;
