@@ -18,6 +18,7 @@ export class PointCloudOctree extends PointCloudTree {
   material: PointCloudMaterial;
   level: number = 0;
   maxLevel: number = Infinity;
+  height: number = 0;
   /**
    * The minimum radius of a node's bounding sphere on the screen in order to be displayed.
    */
@@ -44,6 +45,7 @@ export class PointCloudOctree extends PointCloudTree {
     this.pcoGeometry = pcoGeometry;
     this.boundingBox = pcoGeometry.boundingBox;
     this.boundingSphere = this.boundingBox.getBoundingSphere(new Sphere());
+    this.height = pcoGeometry.height
 
     this.position.copy(pcoGeometry.offset);
     this.updateMatrix();

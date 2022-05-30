@@ -146,16 +146,16 @@ export class PointCloudOctreeGeometryNode extends EventDispatcher implements IPo
     });
   }
 
-  loadResonai(): Promise<void> {
+  loadResonai(): Promise<number | void> {
     if (!this.canLoad()) {
-      return Promise.resolve();
+      return Promise.resolve(0);
     }
 
     this.loading = true;
     this.pcoGeometry.numNodesLoading++;
     this.pcoGeometry.needsUpdate = true;
 
-    let promise: Promise<void>;
+    let promise: Promise<number | void>;
 
     if (
       this.level % this.pcoGeometry.hierarchyStepSize === 0 &&
@@ -198,15 +198,15 @@ export class PointCloudOctreeGeometryNode extends EventDispatcher implements IPo
     return this.pcoGeometry.loader.load(this);
   }
 
-  private loadResonaiHierachyThenPoints(): Promise<any> {
+  private loadResonaiHierachyThenPoints(): Promise<number> {
     if (this.level % this.pcoGeometry.hierarchyStepSize !== 0) {
-      return Promise.resolve();
+      return Promise.resolve(0);
     }
 
     return this.loadResonaiHierarchy(this, this.hierarchyData);
   }
   // tslint:disable:no-bitwise
-  private loadResonaiHierarchy(node: PointCloudOctreeGeometryNode, hierarchyData: any): Promise<any> {
+  private loadResonaiHierarchy(node: PointCloudOctreeGeometryNode, hierarchyData: any): Promise<number> {
     const firstNodeData = this.getResonaiNodeData(node.name, 0, hierarchyData);
     node.numPoints = firstNodeData.numPoints;
 
@@ -246,9 +246,12 @@ export class PointCloudOctreeGeometryNode extends EventDispatcher implements IPo
     // Map containing all the nodes.
     const nodes = new Map<string, PointCloudOctreeGeometryNode>();
     nodes.set(node.name, node);
-    decoded.forEach(nodeData => this.addNode(nodeData, node.pcoGeometry, nodes));
-
-    return node.loadResonaiPoints();
+    let maxLevel = 0
+    decoded.forEach(nodeData => {
+      maxLevel = Math.max(this.addNode(nodeData, node.pcoGeometry, nodes), maxLevel)
+    });
+    node.loadResonaiPoints()
+    return Promise.resolve(maxLevel);
   }
 
   // tslint:disable:no-bitwise
@@ -267,7 +270,7 @@ export class PointCloudOctreeGeometryNode extends EventDispatcher implements IPo
     { name, numPoints, children, indexInList }: NodeData,
     pco: PointCloudOctreeGeometry,
     nodes: Map<string, PointCloudOctreeGeometryNode>,
-  ): void {
+  ): number {
     const index = getIndexFromName(name);
     const parentName = name.substring(0, name.length - 2);
     const parentNode = nodes.get(parentName)!;
@@ -284,5 +287,6 @@ export class PointCloudOctreeGeometryNode extends EventDispatcher implements IPo
 
     parentNode.addChild(node);
     nodes.set(name, node);
+    return node.level
   }
 }

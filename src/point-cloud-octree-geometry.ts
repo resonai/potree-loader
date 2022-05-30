@@ -16,6 +16,7 @@ export class PointCloudOctreeGeometry {
   pointAttributes: PointAttributes = new PointAttributes([]);
   projection: any = null;
   url: string | null = null;
+  height: number = 0;
 
   constructor(
     public loader: YBFLoader,

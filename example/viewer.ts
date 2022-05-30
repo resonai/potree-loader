@@ -104,7 +104,6 @@ export class Viewer {
     jsonFile: string,
     locJSON: any,
     callbacks: ((node: PointCloudOctreeGeometryNode) => void)[]): Promise<PointCloudOctree> {
-    // console.log('here1');
     return this.potree.loadResonaiPointCloud(
       // The file name of the point cloud which is to be loaded.
       jsonFile,
@@ -215,7 +214,6 @@ export class Viewer {
       this.renderer,
       this.camera,
       ray.ray)
-    // console.log(pick?.position?.toArray());
     if (pick?.position) {
       const dir = this.camera.position.clone().sub(this.cameraControls.target.clone());
       const pos = pick.position.clone().add(dir);

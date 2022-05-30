@@ -132,18 +132,13 @@ const onPCOLoad = (pco: PointCloudOctree, quat: number[], translation: number[])
 }
 
 const loadResonaiPotree = async () => {
-  // const onLoad = (node: PointCloudOctreeGeometryNode) => {
-  //   // console.log('Loaded node!', node);
-  // }
   const onLoad = () => {};
   while (firstSPs.length) {
     await Promise.all(firstSPs.splice(0, 1).map(task => {
-      // console.log('__________________');
       return fetch(gsToPath(task.loc)).then(res => {
         res.text().then(text => {
           return viewer.loadResonaiPotree(gsToPath(task.json), JSON5.parse(text), [onLoad])
             .then(pco => {
-              // pco.visible = index % 2 === 0
               onPCOLoad(pco, task.quat, task.translation)
             })
             .catch(err => console.error(err));
