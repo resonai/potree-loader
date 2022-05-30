@@ -15,6 +15,7 @@ export declare class PointCloudOctree extends PointCloudTree {
     material: PointCloudMaterial;
     level: number;
     maxLevel: number;
+    height: number;
     /**
      * The minimum radius of a node's bounding sphere on the screen in order to be displayed.
      */

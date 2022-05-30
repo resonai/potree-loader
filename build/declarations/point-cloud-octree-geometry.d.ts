@@ -20,6 +20,7 @@ export declare class PointCloudOctreeGeometry {
     pointAttributes: PointAttributes;
     projection: any;
     url: string | null;
+    height: number;
     constructor(loader: YBFLoader, boundingBox: Box3, tightBoundingBox: Box3, offset: Vector3, xhrRequest: XhrRequest);
     dispose(): void;
     addNodeLoadedCallback(callback: (node: PointCloudOctreeGeometryNode) => void): void;
