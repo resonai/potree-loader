@@ -51746,24 +51746,18 @@ class PointCloudMaterial extends three__WEBPACK_IMPORTED_MODULE_7__.RawShaderMat
             const pointCloudMaterial = material;
             const materialUniforms = pointCloudMaterial.uniforms;
             // Clip planes
-            if (Math.random() > 0.5) { // TODO(Shai) make calculations to determine wether we need to ignore this node
-                if (material.clippingPlanes && material.clippingPlanes.length > 0) {
-                    const planes = material.clippingPlanes;
-                    const flattenedPlanes = new Array(4 * material.clippingPlanes.length);
-                    for (let i = 0; i < planes.length; i++) {
-                        flattenedPlanes[4 * i + 0] = planes[i].normal.x;
-                        flattenedPlanes[4 * i + 1] = planes[i].normal.y;
-                        flattenedPlanes[4 * i + 2] = planes[i].normal.z;
-                        flattenedPlanes[4 * i + 3] = planes[i].constant;
-                    }
-                    materialUniforms.clippingPlanes.value = flattenedPlanes;
+            if (material.clippingPlanes && material.clippingPlanes.length > 0) {
+                const planes = material.clippingPlanes;
+                const flattenedPlanes = new Array(4 * material.clippingPlanes.length);
+                for (let i = 0; i < planes.length; i++) {
+                    flattenedPlanes[4 * i + 0] = planes[i].normal.x;
+                    flattenedPlanes[4 * i + 1] = planes[i].normal.y;
+                    flattenedPlanes[4 * i + 2] = planes[i].normal.z;
+                    flattenedPlanes[4 * i + 3] = planes[i].constant;
                 }
-                pointCloudMaterial.defines.NUM_CLIP_PLANES = ((_a = material.clippingPlanes) === null || _a === void 0 ? void 0 : _a.length) || 0;
+                materialUniforms.clippingPlanes.value = flattenedPlanes;
             }
-            else {
-                materialUniforms.clippingPlanes.value = [0, 0, 0, 1];
-                pointCloudMaterial.defines.NUM_CLIP_PLANES = 0;
-            }
+            pointCloudMaterial.defines.NUM_CLIP_PLANES = ((_a = material.clippingPlanes) === null || _a === void 0 ? void 0 : _a.length) || 0;
             // TODO(Shai) Apply same if logic to the polyhedra
             // Need to set render order
             materialUniforms.level.value = node.level;
