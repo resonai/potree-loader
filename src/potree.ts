@@ -248,9 +248,8 @@ export class Potree implements IPotree {
       }
 
       const sphere = child.boundingSphere;
-      const distance = sphere.center.distanceTo(cameraPosition);
       const radius = sphere.radius;
-
+      const distance = Math.max(0, sphere.center.distanceTo(cameraPosition) - radius);
       let projectionFactor = 0.0;
 
       if (camera.type === PERSPECTIVE_CAMERA) {
