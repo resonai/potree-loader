@@ -53290,6 +53290,10 @@ class Potree {
             const sphere = child.boundingSphere;
             const distance = sphere.center.distanceTo(cameraPosition);
             const radius = sphere.radius;
+            var camDir = new three__WEBPACK_IMPORTED_MODULE_9__.Vector3();
+            camera.getWorldDirection(camDir);
+            const v = sphere.center.clone().sub(cameraPosition).normalize();
+            const absCosAngleDistance = Math.abs(camDir.dot(v));
             let projectionFactor = 0.0;
             if (camera.type === _constants__WEBPACK_IMPORTED_MODULE_0__.PERSPECTIVE_CAMERA) {
                 const perspective = camera;
@@ -53308,7 +53312,7 @@ class Potree {
                 continue;
             }
             // Nodes which are larger will have priority in loading/displaying.
-            const weight = distance < radius ? Number.MAX_VALUE : screenPixelRadius + 1 / distance;
+            const weight = distance < radius ? Number.MAX_VALUE : screenPixelRadius + absCosAngleDistance / distance;
             priorityQueue.push(new QueueItem(queueItem.pointCloudIndex, weight, child, node));
         }
     }

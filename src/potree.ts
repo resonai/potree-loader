@@ -246,10 +246,14 @@ export class Potree implements IPotree {
       if (child === null) {
         continue;
       }
-
       const sphere = child.boundingSphere;
+
       const distance = sphere.center.distanceTo(cameraPosition);
       const radius = sphere.radius;
+      var camDir = new Vector3();
+      camera.getWorldDirection(camDir);
+      const v = sphere.center.clone().sub(cameraPosition).normalize();
+      const absCosAngleDistance = Math.abs(camDir.dot(v));
 
       let projectionFactor = 0.0;
 
@@ -272,7 +276,7 @@ export class Potree implements IPotree {
       }
 
       // Nodes which are larger will have priority in loading/displaying.
-      const weight = distance < radius ? Number.MAX_VALUE : screenPixelRadius + 1 / distance;
+      const weight = distance < radius ? Number.MAX_VALUE : screenPixelRadius + absCosAngleDistance / distance;
 
       priorityQueue.push(new QueueItem(queueItem.pointCloudIndex, weight, child, node));
     }
