@@ -59,12 +59,12 @@ export declare class PointCloudOctreeGeometryNode extends EventDispatcher implem
      */
     traverse(cb: (node: PointCloudOctreeGeometryNode) => void, includeSelf?: boolean): void;
     load(): Promise<void>;
-    loadResonai(): Promise<void>;
+    loadResonai(): Promise<number | void>;
     private canLoad;
     private loadPoints;
     private loadResonaiPoints;
     private loadResonaiHierachyThenPoints;
     private loadResonaiHierarchy;
     private getResonaiNodeData;
-    addNode({ name, numPoints, children, indexInList }: NodeData, pco: PointCloudOctreeGeometry, nodes: Map<string, PointCloudOctreeGeometryNode>): void;
+    addNode({ name, numPoints, children, indexInList }: NodeData, pco: PointCloudOctreeGeometry, nodes: Map<string, PointCloudOctreeGeometryNode>): number;
 }

@@ -52,7 +52,6 @@ export class Potree implements IPotree {
     xhrRequest = (input: RequestInfo, init?: RequestInit) => fetch(input, init),
     callbacks: ((node: PointCloudOctreeGeometryNode) => void)[]
   ): Promise<PointCloudOctree> {
-    // console.log('here2');
     return loadResonaiPOC(potreeName, getUrl, xhrRequest, callbacks).then(geometry => new PointCloudOctree(this, geometry));
   }
 
@@ -182,6 +181,9 @@ export class Potree implements IPotree {
 
       const halfHeight =
         0.5 * renderer.getSize(this._rendererSize).height * renderer.getPixelRatio();
+
+
+      // TODO(Shai) update the polyhedra / clipping planes on the material here
 
       this.updateChildVisibility(
         queueItem,

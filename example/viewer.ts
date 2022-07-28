@@ -3,6 +3,7 @@ import { PointCloudOctree, Potree } from '../src';
 import { PointCloudOctreeGeometryNode } from '../src/point-cloud-octree-geometry-node';
 import { gsToPath } from '../src/utils/utils';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import Stats from 'stats.js';
 
 export class Viewer {
   /**
@@ -24,7 +25,7 @@ export class Viewer {
   /**
    * Controls which update the position of the camera.
    */
-  cameraControls!: any;
+  cameraControls!: OrbitControls;
   /**
    * helps with target
    */
@@ -70,6 +71,7 @@ export class Viewer {
     window.addEventListener('dblclick', this.ondblclick, false);
 
     requestAnimationFrame(this.loop);
+    this.initStats();
   }
 
   /**
@@ -102,7 +104,6 @@ export class Viewer {
     jsonFile: string,
     locJSON: any,
     callbacks: ((node: PointCloudOctreeGeometryNode) => void)[]): Promise<PointCloudOctree> {
-    // console.log('here1');
     return this.potree.loadResonaiPointCloud(
       // The file name of the point cloud which is to be loaded.
       jsonFile,
@@ -155,6 +156,20 @@ export class Viewer {
     // console.timeEnd('updatePointClouds');
   }
 
+  initStats(): void {
+    var stats = new Stats();
+    stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
+    document.body.appendChild(stats.dom);
+
+    function animate() {
+      stats.begin();
+      // monitored code goes here
+      stats.end();
+      requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
+  }
+
   /**
    * Renders the scene into the canvas.
    */
@@ -199,7 +214,6 @@ export class Viewer {
       this.renderer,
       this.camera,
       ray.ray)
-    // console.log(pick?.position?.toArray());
     if (pick?.position) {
       const dir = this.camera.position.clone().sub(this.cameraControls.target.clone());
       const pos = pick.position.clone().add(dir);

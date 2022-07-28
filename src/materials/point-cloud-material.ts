@@ -681,6 +681,11 @@ export class PointCloudMaterial extends RawShaderMaterial {
         materialUniforms.clippingPlanes.value = flattenedPlanes;
       }
       pointCloudMaterial.defines.NUM_CLIP_PLANES = material.clippingPlanes?.length || 0;
+
+      // TODO(Shai) Apply same if logic to the polyhedra
+      // Need to set render order
+
+
       materialUniforms.level.value = node.level;
       materialUniforms.isLeafNode.value = node.isLeafNode;
 
@@ -745,7 +750,7 @@ export class PointCloudMaterial extends RawShaderMaterial {
         convex.planes.forEach((plane) => {
           planeToCon.push(currentConvex);
           planeToPoly.push(polyhedronIndex);
-          flatPlanes.push(...plane.normal.toArray(), -plane.constant);
+          flatPlanes.push(...(new Vector3().copy(plane.normal)).toArray(), -plane.constant);
         });
         currentConvex++;
       });
@@ -762,7 +767,7 @@ export class PointCloudMaterial extends RawShaderMaterial {
     this.setUniform(`${type}PolyhedronOutside`, polyhedra.map(polyhedron => polyhedron.outside));
     if (type === 'highlight') {
       // @ts-ignore
-      this.setUniform(`${type}PolyhedronColors`, polyhedra.map(polyhedron => polyhedron.color || new Color(0xff3cff)));
+      this.setUniform(`${type}PolyhedronColors`, polyhedra.map(polyhedron => polyhedron.color?.isColor ? polyhedron.color : new Color(polyhedron.color || 0xff3cff)));
     }
     this.defines[`${type.toUpperCase()}_POLYHEDRA_COUNT`] = polyhedra.length;
     this.defines[`${type.toUpperCase()}_CONVEXES_COUNT`] = this.uniforms[`${type}ConToPoly`].value.length;

@@ -50696,13 +50696,11 @@ __webpack_require__.r(__webpack_exports__);
 
 
 function loadResonaiPOC(url, getUrl, xhrRequest, callbacks) {
-    // console.log('here3');
     return xhrRequest((0,_utils_utils__WEBPACK_IMPORTED_MODULE_2__.gsToPath)(url), { mode: 'cors' })
         .then(res => res.json())
         .then(parseResonai((0,_utils_utils__WEBPACK_IMPORTED_MODULE_2__.gsToPath)(url), getUrl, xhrRequest, callbacks));
 }
 function parseResonai(url, getUrl, xhrRequest, callbacks) {
-    // console.log('here4');
     return (data) => {
         const boundingBox = getResonaiBoundingBoxes(data);
         const loader = new _ybf_loader__WEBPACK_IMPORTED_MODULE_3__.YBFLoader({
@@ -50712,8 +50710,9 @@ function parseResonai(url, getUrl, xhrRequest, callbacks) {
         pco.url = url;
         pco.needsUpdate = true;
         const nodes = {};
-        return loadResonaiRoot(pco, data, nodes).then(() => {
+        return loadResonaiRoot(pco, data, nodes).then(height => {
             pco.nodes = nodes;
+            pco.height = height;
             return pco;
         });
     };
@@ -50726,7 +50725,6 @@ function getResonaiBoundingBoxes(data) {
 }
 // tslint:disable:no-bitwise
 function loadResonaiRoot(pco, data, nodes) {
-    // console.log('here5');
     const name = 'r';
     const root = new _point_cloud_octree_geometry_node__WEBPACK_IMPORTED_MODULE_1__.PointCloudOctreeGeometryNode(name, pco, pco.boundingBox, 0);
     root.hasChildren = true;
@@ -50736,7 +50734,7 @@ function loadResonaiRoot(pco, data, nodes) {
     root.hierarchyData = data;
     pco.root = root;
     nodes[name] = root;
-    return pco.root.loadResonai();
+    return pco.root.loadResonai().then(height => height || 0);
 }
 
 
@@ -50838,7 +50836,6 @@ class YBFLoader {
             node.pcoGeometry.needsUpdate = true;
             this.releaseWorker(worker);
             this.callbacks.forEach(callback => callback(node));
-            // console.log('here');
             resolve();
         };
         const message = {
@@ -51761,6 +51758,8 @@ class PointCloudMaterial extends three__WEBPACK_IMPORTED_MODULE_7__.RawShaderMat
                 materialUniforms.clippingPlanes.value = flattenedPlanes;
             }
             pointCloudMaterial.defines.NUM_CLIP_PLANES = ((_a = material.clippingPlanes) === null || _a === void 0 ? void 0 : _a.length) || 0;
+            // TODO(Shai) Apply same if logic to the polyhedra
+            // Need to set render order
             materialUniforms.level.value = node.level;
             materialUniforms.isLeafNode.value = node.isLeafNode;
             const vnStart = pointCloudMaterial.visibleNodeTextureOffsets.get(node.name);
@@ -51819,7 +51818,7 @@ class PointCloudMaterial extends three__WEBPACK_IMPORTED_MODULE_7__.RawShaderMat
                 convex.planes.forEach((plane) => {
                     planeToCon.push(currentConvex);
                     planeToPoly.push(polyhedronIndex);
-                    flatPlanes.push(...plane.normal.toArray(), -plane.constant);
+                    flatPlanes.push(...(new three__WEBPACK_IMPORTED_MODULE_7__.Vector3().copy(plane.normal)).toArray(), -plane.constant);
                 });
                 currentConvex++;
             });
@@ -51836,7 +51835,7 @@ class PointCloudMaterial extends three__WEBPACK_IMPORTED_MODULE_7__.RawShaderMat
         this.setUniform(`${type}PolyhedronOutside`, polyhedra.map(polyhedron => polyhedron.outside));
         if (type === 'highlight') {
             // @ts-ignore
-            this.setUniform(`${type}PolyhedronColors`, polyhedra.map(polyhedron => polyhedron.color || new three__WEBPACK_IMPORTED_MODULE_7__.Color(0xff3cff)));
+            this.setUniform(`${type}PolyhedronColors`, polyhedra.map(polyhedron => { var _a; return ((_a = polyhedron.color) === null || _a === void 0 ? void 0 : _a.isColor) ? polyhedron.color : new three__WEBPACK_IMPORTED_MODULE_7__.Color(polyhedron.color || 0xff3cff); }));
         }
         this.defines[`${type.toUpperCase()}_POLYHEDRA_COUNT`] = polyhedra.length;
         this.defines[`${type.toUpperCase()}_CONVEXES_COUNT`] = this.uniforms[`${type}ConToPoly`].value.length;
@@ -52345,7 +52344,7 @@ class PointCloudOctreeGeometryNode extends three__WEBPACK_IMPORTED_MODULE_2__.Ev
     }
     loadResonai() {
         if (!this.canLoad()) {
-            return Promise.resolve();
+            return Promise.resolve(0);
         }
         this.loading = true;
         this.pcoGeometry.numNodesLoading++;
@@ -52387,7 +52386,7 @@ class PointCloudOctreeGeometryNode extends three__WEBPACK_IMPORTED_MODULE_2__.Ev
     }
     loadResonaiHierachyThenPoints() {
         if (this.level % this.pcoGeometry.hierarchyStepSize !== 0) {
-            return Promise.resolve();
+            return Promise.resolve(0);
         }
         return this.loadResonaiHierarchy(this, this.hierarchyData);
     }
@@ -52426,8 +52425,12 @@ class PointCloudOctreeGeometryNode extends three__WEBPACK_IMPORTED_MODULE_2__.Ev
         // Map containing all the nodes.
         const nodes = new Map();
         nodes.set(node.name, node);
-        decoded.forEach(nodeData => this.addNode(nodeData, node.pcoGeometry, nodes));
-        return node.loadResonaiPoints();
+        let maxLevel = 0;
+        decoded.forEach(nodeData => {
+            maxLevel = Math.max(this.addNode(nodeData, node.pcoGeometry, nodes), maxLevel);
+        });
+        node.loadResonaiPoints();
+        return Promise.resolve(maxLevel);
     }
     // tslint:disable:no-bitwise
     getResonaiNodeData(name, offset, hierarchyData) {
@@ -52454,6 +52457,7 @@ class PointCloudOctreeGeometryNode extends three__WEBPACK_IMPORTED_MODULE_2__.Ev
         node.indexInList = indexInList;
         parentNode.addChild(node);
         nodes.set(name, node);
+        return node.level;
     }
 }
 PointCloudOctreeGeometryNode.idCount = 0;
@@ -52491,6 +52495,7 @@ class PointCloudOctreeGeometry {
         this.pointAttributes = new _point_attributes__WEBPACK_IMPORTED_MODULE_0__.PointAttributes([]);
         this.projection = null;
         this.url = null;
+        this.height = 0;
     }
     dispose() {
         this.loader.dispose();
@@ -52871,6 +52876,7 @@ class PointCloudOctree extends _point_cloud_tree__WEBPACK_IMPORTED_MODULE_4__.Po
         this.disposed = false;
         this.level = 0;
         this.maxLevel = Infinity;
+        this.height = 0;
         /**
          * The minimum radius of a node's bounding sphere on the screen in order to be displayed.
          */
@@ -52888,6 +52894,7 @@ class PointCloudOctree extends _point_cloud_tree__WEBPACK_IMPORTED_MODULE_4__.Po
         this.pcoGeometry = pcoGeometry;
         this.boundingBox = pcoGeometry.boundingBox;
         this.boundingSphere = this.boundingBox.getBoundingSphere(new three__WEBPACK_IMPORTED_MODULE_6__.Sphere());
+        this.height = pcoGeometry.height;
         this.position.copy(pcoGeometry.offset);
         this.updateMatrix();
         this.material = material || new _materials__WEBPACK_IMPORTED_MODULE_1__.PointCloudMaterial();
@@ -53160,7 +53167,6 @@ class Potree {
         })();
     }
     loadResonaiPointCloud(potreeName, getUrl, xhrRequest = (input, init) => fetch(input, init), callbacks) {
-        // console.log('here2');
         return (0,_loading__WEBPACK_IMPORTED_MODULE_2__.loadResonaiPOC)(potreeName, getUrl, xhrRequest, callbacks).then(geometry => new _point_cloud_octree__WEBPACK_IMPORTED_MODULE_3__.PointCloudOctree(this, geometry));
     }
     updatePointClouds(pointClouds, camera, renderer, maxNumNodesLoading = 0) {
@@ -53246,6 +53252,7 @@ class Potree {
                 pointCloud.visibleGeometry.push(node.geometryNode);
             }
             const halfHeight = 0.5 * renderer.getSize(this._rendererSize).height * renderer.getPixelRatio();
+            // TODO(Shai) update the polyhedra / clipping planes on the material here
             this.updateChildVisibility(queueItem, priorityQueue, pointCloud, node, cameraPositions[pointCloudIndex], camera, halfHeight);
         } // end priority queue loop
         // console.log(numNodesLoading, unloadedGeometry.length);
@@ -53281,12 +53288,8 @@ class Potree {
                 continue;
             }
             const sphere = child.boundingSphere;
-            // const distancex = sphere.center.x - cameraPosition.x
-            // const distancey = sphere.center.y - cameraPosition.y
-            // const distancez = sphere.center.z - cameraPosition.z
+            const distance = sphere.center.distanceTo(cameraPosition);
             const radius = sphere.radius;
-            const distance = Math.max(0, sphere.center.distanceTo(cameraPosition) - radius);
-            // const distance = Math.max(0, Math.sqrt(distancex*distancex + distancey*distancey + distancez*distancez) - radius)
             let projectionFactor = 0.0;
             if (camera.type === _constants__WEBPACK_IMPORTED_MODULE_0__.PERSPECTIVE_CAMERA) {
                 const perspective = camera;
@@ -53305,8 +53308,7 @@ class Potree {
                 continue;
             }
             // Nodes which are larger will have priority in loading/displaying.
-            const has_children_penalty = child.children.length > 0 ? 1 : 10;
-            const weight = distance < radius ? Number.MAX_VALUE : screenPixelRadius + 1 / (distance * has_children_penalty);
+            const weight = distance < radius ? Number.MAX_VALUE : screenPixelRadius + 1 / distance;
             priorityQueue.push(new QueueItem(queueItem.pointCloudIndex, weight, child, node));
         }
     }

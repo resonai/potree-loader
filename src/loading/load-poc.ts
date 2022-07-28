@@ -15,7 +15,6 @@ export function loadResonaiPOC(
   xhrRequest: XhrRequest,
   callbacks: ((node: PointCloudOctreeGeometryNode) => void)[]
 ): Promise<PointCloudOctreeGeometry> {
-  // console.log('here3');
   return xhrRequest(gsToPath(url), { mode: 'cors' })
   .then(res => res.json())
   .then(parseResonai(gsToPath(url), getUrl, xhrRequest, callbacks));
@@ -27,7 +26,6 @@ function parseResonai(
   xhrRequest: XhrRequest,
   callbacks: ((node: PointCloudOctreeGeometryNode) => void)[]
 ): (data: any) => Promise<any> {
-  // console.log('here4');
   return (data: any): Promise<PointCloudOctreeGeometry> => {
     const boundingBox = getResonaiBoundingBoxes(data);
     const loader = new YBFLoader({
@@ -46,8 +44,9 @@ function parseResonai(
     pco.needsUpdate = true;
 
     const nodes: Record<string, PointCloudOctreeGeometryNode> = {};
-    return loadResonaiRoot(pco, data, nodes).then(() => {
+    return loadResonaiRoot(pco, data, nodes).then(height => {
       pco.nodes = nodes;
+      pco.height = height
       return pco;
     });
   };
@@ -67,8 +66,7 @@ function loadResonaiRoot(
   pco: PointCloudOctreeGeometry,
   data: any,
   nodes: Record<string, PointCloudOctreeGeometryNode>,
-): Promise<void> {
-  // console.log('here5');
+): Promise<number> {
   const name = 'r';
 
   const root = new PointCloudOctreeGeometryNode(name, pco, pco.boundingBox, 0);
@@ -79,5 +77,5 @@ function loadResonaiRoot(
   root.hierarchyData = data;
   pco.root = root;
   nodes[name] = root;
-  return pco.root.loadResonai();
+  return pco.root.loadResonai().then(height => height || 0);
 }
