@@ -46,7 +46,7 @@ function parseResonai(
     const nodes: Record<string, PointCloudOctreeGeometryNode> = {};
     return loadResonaiRoot(pco, data, nodes).then(height => {
       pco.nodes = nodes;
-      pco.height = height
+      pco.height = height;
       return pco;
     });
   };
