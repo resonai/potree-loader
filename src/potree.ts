@@ -28,6 +28,8 @@ import { BinaryHeap } from './utils/binary-heap';
 import { Box3Helper } from './utils/box3-helper';
 import { LRU } from './utils/lru';
 
+console.log('$$$$$$$$$$$$$$$$$$$$$$$$$')
+
 export class QueueItem {
   constructor(
     public pointCloudIndex: number,

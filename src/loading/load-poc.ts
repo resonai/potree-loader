@@ -15,9 +15,12 @@ export function loadResonaiPOC(
   xhrRequest: XhrRequest,
   callbacks: ((node: PointCloudOctreeGeometryNode) => void)[]
 ): Promise<PointCloudOctreeGeometry> {
-  return xhrRequest(gsToPath(url), { mode: 'cors' })
+  const fullUrl = gsToPath(url)
+  // const cachedFile = localStorage.getItem(fullUrl)
+  // if (cachedFile)
+  return xhrRequest(fullUrl, { mode: 'cors' })
   .then(res => res.json())
-  .then(parseResonai(gsToPath(url), getUrl, xhrRequest, callbacks));
+  .then(parseResonai(fullUrl, getUrl, xhrRequest, callbacks));
 }
 
 function parseResonai(
