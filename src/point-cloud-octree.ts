@@ -45,7 +45,7 @@ export class PointCloudOctree extends PointCloudTree {
     this.pcoGeometry = pcoGeometry;
     this.boundingBox = pcoGeometry.boundingBox;
     this.boundingSphere = this.boundingBox.getBoundingSphere(new Sphere());
-    this.height = pcoGeometry.height
+    this.height = pcoGeometry.height;
 
     this.position.copy(pcoGeometry.offset);
     this.updateMatrix();

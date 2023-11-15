@@ -14,7 +14,8 @@ const firstSPs = sps.slice(0, 50);
 const JSON5 = require('json5');
 
 // @ts-ignore
-import { GUI } from 'three/examples/jsm/libs/dat.gui.module.js';
+import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
+// import { GUI } from 'three/examples/jsm/libs/lil-gui.module.js';
 
 require('./main.css');
 

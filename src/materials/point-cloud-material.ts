@@ -685,7 +685,6 @@ export class PointCloudMaterial extends RawShaderMaterial {
       // TODO(Shai) Apply same if logic to the polyhedra
       // Need to set render order
 
-
       materialUniforms.level.value = node.level;
       materialUniforms.isLeafNode.value = node.isLeafNode;
 
@@ -767,7 +766,8 @@ export class PointCloudMaterial extends RawShaderMaterial {
     this.setUniform(`${type}PolyhedronOutside`, polyhedra.map(polyhedron => polyhedron.outside));
     if (type === 'highlight') {
       // @ts-ignore
-      this.setUniform(`${type}PolyhedronColors`, polyhedra.map(polyhedron => polyhedron.color?.isColor ? polyhedron.color : new Color(polyhedron.color || 0xff3cff)));
+      this.setUniform(`${type}PolyhedronColors`,
+        polyhedra.map(polyhedron => polyhedron.color?.isColor ? polyhedron.color : new Color(polyhedron.color || 0xff3cff)));
     }
     this.defines[`${type.toUpperCase()}_POLYHEDRA_COUNT`] = polyhedra.length;
     this.defines[`${type.toUpperCase()}_CONVEXES_COUNT`] = this.uniforms[`${type}ConToPoly`].value.length;
